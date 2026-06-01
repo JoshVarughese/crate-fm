@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crate.fm</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: 'Segoe UI', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* LANDING */
+        .landing {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
+        }
+
+        .logo span {
+            color: #e8a020;
+        }
+
+        .tagline {
+            color: #555;
+            margin-bottom: 40px;
+            font-size: 1rem;
+        }
+
+        .search-container {
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 16px 20px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 1.05rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-box:focus {
+            border-color: #e8a020;
+        }
+
+        .search-results {
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 0;
+            right: 0;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            overflow: hidden;
+            display: none;
+            z-index: 100;
+        }
+
+        .search-result-item {
+            padding: 12px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #2a2a2a;
+            transition: background 0.15s;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover {
+            background: #2a2a2a;
+        }
+
+        .result-artist-image {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #2a2a2a;
+        }
+
+        .result-artist-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .result-artist-listeners {
+            font-size: 0.78rem;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        /* RESULTS PAGE */
+        .results-page {
+            display: none;
+            min-height: 100vh;
+        }
+
+        .artist-header {
+            background: linear-gradient(to bottom, #1a1a1a, #0a0a0a);
+            padding: 40px 20px 0;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .artist-header-inner {
+            display: flex;
+            align-items: flex-end;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .artist-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #2a2a2a;
+            flex-shrink: 0;
+        }
+
+        .artist-info h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .artist-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .artist-tag {
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            background: #e8a02022;
+            color: #e8a020;
+            border: 1px solid #e8a02044;
+        }
+
+        .artist-listeners {
+            font-size: 0.82rem;
+            color: #666;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 0.88rem;
+            padding: 0;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+
+        .back-btn:hover {
+            color: #fff;
+        }
+
+        /* TABS */
+        .tabs-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 20px;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: #555;
+            cursor: pointer;
+            font-size: 0.88rem;
+            padding: 14px 16px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            color: #fff;
+        }
+
+        .tab-btn.active {
+            color: #fff;
+            border-bottom-color: #e8a020;
+            font-weight: 600;
+        }
+
+        /* SIZE TOGGLE */
+        .size-toggle {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .size-btn {
+            padding: 6px 16px;
+            border-radius: 6px;
+            border: 1px solid #2a2a2a;
+            background: #1a1a1a;
+            color: #666;
+            cursor: pointer;
+            font-size: 0.82rem;
+            transition: all 0.2s;
+        }
+
+        .size-btn.active {
+            background: #e8a020;
+            border-color: #e8a020;
+            color: #000;
+            font-weight: 600;
+        }
+
+        /* CONTENT */
+        .content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* TRACK LIST */
+        .track-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 16px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            border: 1px solid #2a2a2a;
+            transition: border-color 0.2s;
+        }
+
+        .track-item:hover {
+            border-color: #e8a02044;
+        }
+
+        .track-number {
+            color: #444;
+            font-size: 0.85rem;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .track-info {
+            flex: 1;
+        }
+
+        .track-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .track-plays {
+            font-size: 0.78rem;
+            color: #555;
+            margin-top: 2px;
+        }
+
+        .listen-links {
+            display: flex;
+            gap: 6px;
+        }
+
+        .listen-btn {
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .listen-btn:hover {
+            opacity: 0.8;
+        }
+
+        .btn-spotify { background: #1DB954; color: #000; }
+        .btn-apple { background: #fc3c44; color: #fff; }
+        .btn-youtube { background: #FF0000; color: #fff; }
+
+        /* RANDOM TRACK */
+        .random-card {
+            background: #1a1a1a;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            border: 1px solid #2a2a2a;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .random-card .dice {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+
+        .random-card .track-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .random-card .track-artist {
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .random-card .listen-links {
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .reroll-btn {
+            padding: 10px 24px;
+            background: #e8a020;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .reroll-btn:hover {
+            background: #d09018;
+        }
+
+        /* SIMILAR ARTISTS */
+        .similar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 16px;
+        }
+
+        .similar-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 20px 16px;
+            text-align: center;
+            border: 1px solid #2a2a2a;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .similar-card:hover {
+            border-color: #e8a02066;
+            transform: translateY(-2px);
+        }
+
+        .similar-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #2a2a2a;
+            margin: 0 auto 12px;
+            display: block;
+        }
+
+        .similar-name {
+            font-weight: 600;
+            font-size: 0.88rem;
+        }
+
+        /* LOADING */
+        .loading-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            gap: 16px;
+            color: #555;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #2a2a2a;
+            border-top-color: #e8a020;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LANDING -->
+    <div class="landing" id="landing">
+        <div class="logo">Crate<span>.fm</span></div>
+        <p class="tagline">Dig deeper into any artist's catalog</p>
+        <div class="search-container">
+            <input type="text" class="search-box" id="searchBox" placeholder="Search an artist..." autocomplete="off">
+            <div class="search-results" id="searchResults"></div>
+        </div>
+    </div>
+
+    <!-- LOADING -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-spinner"></div>
+        <p>Digging through the crates...</p>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results-page" id="resultsPage">
+        <div class="artist-header">
+            <button class="back-btn" id="backBtn">← Search again</button>
+            <div class="artist-header-inner">
+                <img class="artist-image" id="artistImage" src="" alt="">
+                <div class="artist-info">
+                    <h1 id="artistName"></h1>
+                    <div class="artist-tags" id="artistTags"></div>
+                    <div class="artist-listeners" id="artistListeners"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tabs-container">
+            <button class="tab-btn active" data-tab="popular">🔥 Popular</button>
+            <button class="tab-btn" data-tab="deepcuts">💎 Deep Cuts</button>
+            <button class="tab-btn" data-tab="random">🎲 Random</button>
+            <button class="tab-btn" data-tab="similar">🎤 Similar Artists</button>
+        </div>
+
+        <div class="content">
+            <!-- Popular -->
+            <div class="tab-content active" id="tab-popular">
+                <div class="size-toggle">
+                    <button class="size-btn active" data-size="5">Top 5</button>
+                    <button class="size-btn" data-size="10">Top 10</button>
+                </div>
+                <div id="popular-tracks"></div>
+            </div>
+
+
+            <!-- Deep Cuts -->
+            <div class="tab-content" id="tab-deepcuts">
+                <div class="size-toggle">
+                    <button class="size-btn active" data-size="5">5 Songs</button>
+                    <button class="size-btn" data-size="10">10 Songs</button>
+                </div>
+                <div id="deepcuts-tracks"></div>
+            </div>
+
+            <!-- Random -->
+            <div class="tab-content" id="tab-random">
+                <div class="random-card" id="randomCard"></div>
+            </div>
+
+            <!-- Similar -->
+            <div class="tab-content" id="tab-similar">
+                <div class="similar-grid" id="similar-artists"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentArtist = '';
+        let currentData = null;
+        let searchTimeout = null;
+        let currentSizes = { popular: 5, deepcuts: 5 };
+
+        // Search
+        const searchBox = document.getElementById('searchBox');
+        const searchResults = document.getElementById('searchResults');
+
+        searchBox.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            const q = searchBox.value.trim();
+            if (q.length < 2) { searchResults.style.display = 'none'; return; }
+            searchTimeout = setTimeout(() => doSearch(q), 350);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!searchBox.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+
+        async function doSearch(q) {
+            const res = await fetch(`/search_artist?q=${encodeURIComponent(q)}`);
+            const artists = await res.json();
+            searchResults.innerHTML = '';
+            if (!artists.length) { searchResults.style.display = 'none'; return; }
+            artists.forEach(a => {
+                const item = document.createElement('div');
+                item.className = 'search-result-item';
+                item.innerHTML = `
+                    <img class="result-artist-image" src="${a.image || ''}" alt="${a.name}" onerror="this.style.display='none'">
+                    <div>
+                        <div class="result-artist-name">${a.name}</div>
+                        ${a.listeners ? `<div class="result-artist-listeners">${parseInt(a.listeners).toLocaleString()} listeners</div>` : ''}
+                    </div>
+                `;
+                item.addEventListener('click', () => loadArtist(a.name));
+                searchResults.appendChild(item);
+            });
+            searchResults.style.display = 'block';
+        }
+
+        async function loadArtist(name) {
+            currentArtist = name;
+            searchResults.style.display = 'none';
+            document.getElementById('landing').style.display = 'none';
+            document.getElementById('loadingScreen').style.display = 'flex';
+            document.getElementById('resultsPage').style.display = 'none';
+
+            const res = await fetch(`/artist/${encodeURIComponent(name)}`);
+            currentData = await res.json();
+
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('resultsPage').style.display = 'block';
+
+            renderArtist();
+            renderTab('popular');
+            setActiveTab('popular');
+        }
+
+        function renderArtist() {
+            const info = currentData.info;
+            document.getElementById('artistName').textContent = info.name;
+            document.getElementById('artistImage').src = info.image || '';
+            document.getElementById('artistListeners').textContent = info.listeners ? `${parseInt(info.listeners).toLocaleString()} listeners on Last.fm` : '';
+            document.getElementById('artistTags').innerHTML = info.tags.map(t => `<span class="artist-tag">${t}</span>`).join('');
+        }
+
+        function renderTracks(tracks, containerId, size) {
+            const el = document.getElementById(containerId);
+            const visible = tracks.slice(0, size);
+            el.innerHTML = visible.map((t, i) => `
+                <div class="track-item">
+                    <div class="track-number">${i + 1}</div>
+                    <div class="track-info">
+                        <div class="track-name">${t.name}</div>
+                        ${t.playcount ? `<div class="track-plays">${parseInt(t.playcount).toLocaleString()} plays</div>` : ''}
+                    </div>
+                    <div class="listen-links">
+                        <a href="${t.spotify_url}" target="_blank" class="listen-btn btn-spotify">Spotify</a>
+                        <a href="${t.apple_url}" target="_blank" class="listen-btn btn-apple">Apple</a>
+                        <a href="${t.youtube_url}" target="_blank" class="listen-btn btn-youtube">YouTube</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderRandom(track) {
+            const el = document.getElementById('randomCard');
+            if (!track) { el.innerHTML = '<p style="color:#555">No track found.</p>'; return; }
+            el.innerHTML = `
+                <div class="dice">🎲</div>
+                <div class="track-name">${track.name}</div>
+                <div class="track-artist">${track.artist}</div>
+                <div class="listen-links">
+                    <a href="${track.spotify_url}" target="_blank" class="listen-btn btn-spotify">Spotify</a>
+                    <a href="${track.apple_url}" target="_blank" class="listen-btn btn-apple">Apple</a>
+                    <a href="${track.youtube_url}" target="_blank" class="listen-btn btn-youtube">YouTube</a>
+                </div>
+                <button class="reroll-btn" onclick="reroll()">🎲 Roll Again</button>
+            `;
+        }
+
+        function renderSimilar(artists) {
+            const el = document.getElementById('similar-artists');
+            el.innerHTML = artists.map(a => `
+                <div class="similar-card" onclick="loadArtist('${a.name.replace(/'/g, "\\'")}')">
+                    <img class="similar-image" src="${a.image || ''}" alt="${a.name}" onerror="this.style.display='none'">
+                    <div class="similar-name">${a.name}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderTab(tab) {
+            if (tab === 'popular') renderTracks(currentData.popular, 'popular-tracks', currentSizes.popular);
+            if (tab === 'essentials') renderTracks(currentData.essentials, 'essentials-tracks', currentSizes.essentials);
+            if (tab === 'deepcuts') renderTracks(currentData.deep_cuts, 'deepcuts-tracks', currentSizes.deepcuts);
+            if (tab === 'random') renderRandom(currentData.random);
+            if (tab === 'similar') renderSimilar(currentData.similar);
+        }
+
+        function setActiveTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === `tab-${tab}`));
+        }
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                setActiveTab(btn.dataset.tab);
+                renderTab(btn.dataset.tab);
+            });
+        });
+
+        document.querySelectorAll('.size-toggle').forEach(toggle => {
+            toggle.querySelectorAll('.size-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    toggle.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const size = parseInt(btn.dataset.size);
+                    const tab = toggle.closest('.tab-content').id.replace('tab-', '');
+                    currentSizes[tab] = size;
+                    renderTab(tab);
+                });
+            });
+        });
+
+        async function reroll() {
+            const res = await fetch(`/artist/${encodeURIComponent(currentArtist)}`);
+            const data = await res.json();
+            currentData.random = data.random;
+            renderRandom(currentData.random);
+        }
+
+        document.getElementById('backBtn').addEventListener('click', () => {
+            document.getElementById('resultsPage').style.display = 'none';
+            document.getElementById('landing').style.display = 'flex';
+            searchBox.value = '';
+        });
+    </script>
+</body>
+</html>
